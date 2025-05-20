@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Meus Favoritos - Biblioteca Online</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #6200ea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .favorite-page {
+            padding: 20px;
+            text-align: center;
+        }
+        .favorite-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+        .favorite-list .book-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px;
+            padding: 15px;
+            width: 250px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative; /* Para posicionar o botão */
+        }
+        .favorite-list .book-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .favorite-list .book-card h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .favorite-list .book-card .remove-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .favorite-list .book-card .remove-button:hover {
+            background-color: #d32f2f;
+        }
+        .no-favorites {
+            font-size: 18px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Meus Livros Favoritos</h1>
+    <p><a href="homepag.html" style="color: white; text-decoration: none;">Voltar para a Biblioteca</a></p>
+</header>
+
+<div class="favorite-page">
+    <div class="favorite-list" id="favoriteList">
+        </div>
+</div>
+
+<script>
+    // Recupera os IDs dos livros favoritos do localStorage.
+    // Se não houver nada, inicializa um novo Set vazio.
+    const favoriteIds = new Set(JSON.parse(localStorage.getItem('favorites')) || []);
+    // Obtém a referência para a div onde a lista de livros favoritos será renderizada.
+    const favoriteListDiv = document.getElementById('favoriteList');
+
+    // Função para remover um livro dos favoritos
+    function removeFromFavorites(bookId) {
+        favoriteIds.delete(bookId);
+        localStorage.setItem('favorites', JSON.stringify(Array.from(favoriteIds)));
+        // Recarrega os livros favoritos após a remoção
+        fetchFavoriteBooks();
+    }
+
+    // Função assíncrona para buscar os detalhes dos livros favoritos.
+    async function fetchFavoriteBooks() {
+        // Limpa o conteúdo atual da div da lista de favoritos.
+        favoriteListDiv.innerHTML = "";
+
+        // Verifica se há algum livro favorito. Se não houver, exibe uma mensagem.
+        if (favoriteIds.size === 0) {
+            favoriteListDiv.innerHTML = '<p class="no-favorites">Você ainda não adicionou nenhum livro aos seus favoritos.</p>';
+            return;
+        }
+
+        // Cria um array de promessas para buscar os detalhes de cada livro favorito usando a API do Google Books.
+        const bookDetailsPromises = Array.from(favoriteIds).map(id =>
+            fetch(`https://www.googleapis.com/books/v1/volumes/${id}`)
+                .then(response => response.json())
+                .catch(error => {
+                    console.error(`Erro ao buscar detalhes do livro ${id}:`, error);
+                    return null; // Retorna null em caso de erro para filtrar depois.
+                })
+        );
+
+        // Aguarda que todas as promessas sejam resolvidas para obter os dados de todos os livros favoritos.
+        const favoriteBooksData = await Promise.all(bookDetailsPromises);
+        // Filtra os resultados para remover quaisquer buscas que falharam (retornaram null).
+        const validFavoriteBooks = favoriteBooksData.filter(book => book);
+
+        // Se houver livros favoritos válidos, chama a função para renderizá-los na tela.
+        if (validFavoriteBooks.length > 0) {
+            renderFavoriteBooks(validFavoriteBooks);
+        } else {
+            // Se houve um erro ao carregar os livros favoritos, exibe uma mensagem de erro.
+            favoriteListDiv.innerHTML = '<p class="no-favorites">Erro ao carregar seus livros favoritos.</p>';
+        }
+    }
+
+    // Função para renderizar os detalhes dos livros favoritos na página.
+    function renderFavoriteBooks(books) {
+        // Itera sobre cada livro na lista de livros favoritos.
+        books.forEach(bookItem => {
+            // Extrai as informações do volume do livro.
+            const info = bookItem.volumeInfo;
+            // Obtém o ID do livro.
+            const bookId = bookItem.id;
+            // Obtém o título do livro ou define como "Sem título" se não houver.
+            const title = info.title || "Sem título";
+            // Obtém os autores do livro e os junta em uma string, ou define como "Autor desconhecido" se não houver.
+            const authors = info.authors ? info.authors.join(", ") : "Autor desconhecido";
+            // Obtém o link da miniatura da capa do livro ou usa um placeholder se não houver.
+            const thumbnail = info.imageLinks ? info.imageLinks.thumbnail : "https://via.placeholder.com/128x200?text=Sem+Capa";
+
+            // Cria um novo elemento div para representar o card do livro.
+            const card = document.createElement("div");
+            // Define a classe CSS do card do livro.
+            card.className = "book-card";
+            // Define o conteúdo HTML do card do livro, incluindo a imagem, título e autor.
+            card.innerHTML = `
+                <img src="${thumbnail}" alt="Capa do livro ${title}" />
+                <h3>${title}</h3>
+                <p><strong>Autor:</strong> ${authors}</p>
+                <button class="remove-button" onclick="removeFromFavorites('${bookId}')">Remover</button>
+            `;
+            // Adiciona o card do livro à div da lista de favoritos.
+            favoriteListDiv.appendChild(card);
+        });
+    }
+
+    // Chama a função para carregar os livros favoritos quando a página é carregada.
+    fetchFavoriteBooks();
+</script>
+
+</body>
+</html>

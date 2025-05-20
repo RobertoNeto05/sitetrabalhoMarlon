@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Perfil do Usuário - Nome do Site de Livros</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Página de perfil do usuário no Nome do Site de Livros. Veja livros favoritos, lista de leitura e resenhas.">
+    <link rel="stylesheet" href="perfil.css">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="homepag.html" style="color: rgb(255, 255, 255);">Home</a>
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <section class="profile-info">
+            <div class="profile-details">
+                <p><span class="label">Nome:</span> <span id="nome"></span></p>
+                <p><span class="label">Data de Registro:</span> <span id="dataRegistro"></span></p>
+                <p><span class="label">País:</span> <span id="pais"></span></p>
+                <p><span class="label">Estado:</span> <span id="estado"></span></p>
+                <button onclick="location.href='altPerfil.html'">Editar Perfil</button>
+            </div>
+        </section>
+
+        <div class="profile-sections" id="profileSections">
+            <section class="profile-section">
+                <h2>Livros Favoritos</h2>
+
+            </section>
+
+            <section class="profile-section">
+                <h2>Lista de Desejos (Wish List)</h2>
+              
+            </section>
+
+           
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Nome do Site de Livros. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <script src="perfil.js"></script>
+
+</body>
+</html>

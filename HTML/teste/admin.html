@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f0f0f0; }
+        h2 { color: #333; margin-bottom: 20px; }
+        #listaUsuarios { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        #listaUsuarios h3 { margin-top: 0; color: #555; margin-bottom: 10px; }
+        #usuariosCadastrados { list-style: none; padding: 0; }
+        #usuariosCadastrados li { border-bottom: 1px solid #eee; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        #usuariosCadastrados li:last-child { border-bottom: none; }
+        .acoes button { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .acoes button:hover { background-color: #c82333; }
+        #logoutBtn { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 1em; margin-top: 20px; }
+        #logoutBtn:hover { background-color: #0056b3; }
+        .mensagem-vazio { color: #777; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h2>Painel de Administração</h2>
+
+    <div id="listaUsuarios">
+        <h3>Usuários Cadastrados</h3>
+        <ul id="usuariosCadastrados">
+            <li class="mensagem-vazio">Nenhum usuário cadastrado ainda.</li>
+        </ul>
+    </div>
+
+    <button id="logoutBtn">Sair</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const listaUsuarios = document.getElementById('usuariosCadastrados');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            function exibirUsuarios() {
+                const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+                listaUsuarios.innerHTML = ''; // Limpar a lista
+
+                if (usuarios.length === 0) {
+                    const li = document.createElement('li');
+                    li.classList.add('mensagem-vazio');
+                    li.textContent = 'Nenhum usuário cadastrado ainda.';
+                    listaUsuarios.appendChild(li);
+                    return;
+                }
+
+                usuarios.forEach((usuario, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${usuario.nome} (${usuario.email})`;
+
+                    const acoes = document.createElement('div');
+                    acoes.classList.add('acoes');
+
+                    const excluirBtn = document.createElement('button');
+                    excluirBtn.textContent = 'Excluir';
+                    excluirBtn.addEventListener('click', () => {
+                        if (confirm(`Deseja excluir o usuário ${usuario.nome}?`)) {
+                            usuarios.splice(index, 1);
+                            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                            exibirUsuarios(); // Atualizar a lista após a exclusão
+                        }
+                    });
+
+                    acoes.appendChild(excluirBtn);
+                    li.appendChild(acoes);
+                    listaUsuarios.appendChild(li);
+                });
+            }
+
+            // Verificar se o usuário está logado
+            const usuarioLogado = localStorage.getItem('usuarioLogado');
+            if (!usuarioLogado) {
+                window.location.href = 'login.html'; // Redirecionar para o login se não estiver logado
+            } else {
+                exibirUsuarios(); // Exibir a lista de usuários se estiver logado
+            }
+
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('usuarioLogado');
+                window.location.href = 'login.html'; // Redirecionar para o login após o logout
+            });
+        });
+    </script>
+</body>
+</html>
