@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="Login.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required />
+        <div class="error-message" id="emailErro"></div>
+      </div>
+      <div class="form-group">
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required />
+        <div class="error-message" id="senhaErro"></div>
+      </div>
+      <button type="submit">Entrar</button>
+      <div id="mensagem"></div>
+    </form>
+    <p style="text-align: center; margin-top: 15px;">
+      Não tem uma conta? <a href="cadastro.html" style="color: #8b5e3c;">Cadastre-se</a>
+    </p>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("loginForm");
+      const emailInput = document.getElementById("email");
+      const senhaInput = document.getElementById("senha");
+      const emailErro = document.getElementById("emailErro");
+      const senhaErro = document.getElementById("senhaErro");
+      const mensagemDiv = document.getElementById("mensagem");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        emailErro.textContent = "";
+        senhaErro.textContent = "";
+        mensagemDiv.textContent = "";
+
+        const email = emailInput.value.trim();
+        const senha = senhaInput.value.trim();
+
+        const usuariosCadastrados = localStorage.getItem("usuarios");
+        let usuarios = usuariosCadastrados ? JSON.parse(usuariosCadastrados) : [];
+
+        const usuarioValido = usuarios.find(
+          (user) => user.email === email && user.senha === senha
+        );
+
+        if (usuarioValido) {
+          mensagemDiv.textContent = "Login bem-sucedido! Redirecionando...";
+          mensagemDiv.style.color = "#4b8b3b";
+
+          // Salva o usuário logado no sessionStorage
+          sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioValido)); // Salva o usuário logado
+
+          setTimeout(() => {
+            if (usuarioValido.isAdmin) { // Se o usuário é admin
+              window.location.href = "listagem.html"; // Redireciona para a listagem
+            } else { // Se o usuário NÃO é admin
+              window.location.href = "homepag.html"; // Redireciona para a homepage
+            }
+          }, 1500); // Atraso de 1.5 segundos para a mensagem
+        } else {
+          mensagemDiv.textContent = "E-mail ou senha inválidos.";
+          mensagemDiv.style.color = "#a94442";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
